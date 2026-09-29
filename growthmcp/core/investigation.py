@@ -69,16 +69,30 @@ def _investigation_summary(metric: str, cur: Dict[str, float], prev: Dict[str, f
 
 
 def _breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> Dict[str, Any]:
+    """Compare current and previous performance at each investigation dimension.
+
+    The union of dimension values is retained so newly observed and disappeared
+    campaigns, ad sets, and creatives remain visible.
+    """
     result = {}
     for dimension in ("platform", "campaign_name", "adset_name", "creative_name"):
         current_groups = _group(rows, dimension)
         previous_groups = _group(prev, dimension)
+        names = sorted(set(current_groups) | set(previous_groups))
         result[dimension] = []
-        for name, items in current_groups.items():
-            cur = _aggregate(items)
+        for name in names:
+            cur = _aggregate(current_groups.get(name, []))
             old = _aggregate(previous_groups.get(name, []))
-            result[dimension].append({"value": name, "metrics": cur, "comparison": _delta(cur, old, metric)})
+            result[dimension].append({
+                "value": name,
+                "current_record_count": len(current_groups.get(name, [])),
+                "previous_record_count": len(previous_groups.get(name, [])),
+                "current_metrics": cur,
+                "previous_metrics": old,
+                "comparison": _delta(cur, old, metric),
+            })
     return result
+
 
 
 @mcp_server.tool()
@@ -102,6 +116,13 @@ async def investigate_growth_issue(question: str, current_records: List[Dict[str
         "evidence": {"current_record_count": len(current), "previous_record_count": len(previous), "current_rows": current[:50], "previous_rows": previous[:50]},
         "limitations": ["Only supplied records are analyzed.", "Driver consistency does not establish causality.", "Attribution semantics depend on source data."]
     }
+    if previous:
+        current_campaigns = set(_group(current, "campaign_name"))
+        previous_campaigns = set(_group(previous, "campaign_name"))
+        result["investigation_notes"] = {
+            "campaigns_added": sorted(current_campaigns - previous_campaigns),
+            "campaigns_removed": sorted(previous_campaigns - current_campaigns),
+        }
     if user_events:
         result["cohort_context"] = {"user_event_count": len([r for r in user_events if isinstance(r, dict)]), "note": "Use analyze_cohorts for detailed retention output."}
     return json.dumps(result, indent=2)
