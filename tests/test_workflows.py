@@ -1,4 +1,9 @@
-from growthmcp.core.workflows import canonicalize_record, _aggregate
+import json
+
+import pytest
+
+from growthmcp.core.workflows import canonicalize_record, _aggregate, analyze_cohorts
+from growthmcp.core.investigation import _drivers, _metric, investigate_growth_issue
 
 
 def test_canonicalize_common_platform_fields():
@@ -20,7 +25,20 @@ def test_workflow_aggregate_uses_aggregate_rates():
     assert result["ctr"] == 7.5
 
 
-from growthmcp.core.investigation import _drivers, _metric
+@pytest.mark.asyncio
+async def test_cohort_uses_earliest_event_month():
+    events = [
+        {"user_id": "u1", "event_date": "2026-02-10", "event_name": "purchase"},
+        {"user_id": "u1", "event_date": "2026-01-05", "event_name": "signup"},
+        {"user_id": "u1", "event_date": "2026-03-01", "event_name": "session"},
+        {"user_id": "u2", "event_date": "2026-01-20", "event_name": "signup"},
+    ]
+    result = json.loads(await analyze_cohorts(events))
+    cohort = next(item for item in result["cohorts"] if item["cohort"] == "2026-01")
+    assert cohort["cohort_users"] == 2
+    assert cohort["retention"]["month_0"]["active_users"] == 2
+    assert cohort["retention"]["month_1"]["active_users"] == 1
+    assert cohort["retention"]["month_2"]["active_users"] == 1
 
 
 def test_investigation_detects_roas_and_drivers():
@@ -29,3 +47,22 @@ def test_investigation_detects_roas_and_drivers():
     assert {d["component"] for d in drivers} == {"revenue", "spend"}
     assert drivers[0]["delta"]["change_pct"] == -20.0
     assert drivers[1]["delta"]["change_pct"] == 20.0
+
+
+@pytest.mark.asyncio
+async def test_investigation_tool_returns_driver_evidence():
+    current = [
+        {"date": "2026-09-10", "campaign_name": "Search", "spend": 120, "revenue": 80},
+    ]
+    previous = [
+        {"date": "2026-09-03", "campaign_name": "Search", "spend": 100, "revenue": 100},
+    ]
+    result = json.loads(await investigate_growth_issue(
+        "Why did ROAS drop?",
+        current_records=current,
+        previous_records=previous,
+    ))
+    assert result["issue_metric"] == "roas"
+    assert result["target_change"]["change_pct"] == -26.666666666666668
+    assert {item["component"] for item in result["driver_decomposition"]} == {"revenue", "spend"}
+    assert result["evidence"]["current_record_count"] == 1
