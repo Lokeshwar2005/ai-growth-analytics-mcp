@@ -84,3 +84,52 @@ def test_canonicalize_meta_action_arrays():
     assert result["leads"] == 8.0
     assert result["conversions"] == 3.0
     assert result["revenue"] == 360.0
+
+
+@pytest.mark.asyncio
+async def test_live_meta_investigation_bridge(monkeypatch):
+    from growthmcp.core import live_investigation
+
+    calls = []
+
+    async def fake_request(endpoint, access_token, params=None, method="GET"):
+        calls.append((endpoint, params))
+        since = json.loads(params["time_range"])["since"]
+        if since == "2026-09-15":
+            return {
+                "data": [{
+                    "campaign_name": "Search",
+                    "spend": "120",
+                    "impressions": "1000",
+                    "clicks": "50",
+                    "actions": [{"action_type": "purchase", "value": "3"}],
+                    "action_values": [{"action_type": "purchase", "value": "240"}],
+                }]
+            }
+        return {
+            "data": [{
+                "campaign_name": "Search",
+                "spend": "100",
+                "impressions": "1000",
+                "clicks": "100",
+                "actions": [{"action_type": "purchase", "value": "4"}],
+                "action_values": [{"action_type": "purchase", "value": "400"}],
+            }]
+        }
+
+    monkeypatch.setattr(live_investigation, "make_api_request", fake_request)
+    result = json.loads(await live_investigation.investigate_live_meta_growth_issue(
+        "Why did ROAS drop?",
+        "act_123",
+        {"since": "2026-09-15", "until": "2026-09-21"},
+        {"since": "2026-09-08", "until": "2026-09-14"},
+        access_token="test-token",
+    ))
+
+    assert result["source"] == "meta-live"
+    assert result["issue_metric"] == "roas"
+    assert result["current_metrics"]["roas"] == 2.0
+    assert result["previous_metrics"]["roas"] == 4.0
+    assert result["target_change"]["change_pct"] == -50.0
+    assert len(calls) == 2
+    assert calls[0][0] == "act_123/insights"
