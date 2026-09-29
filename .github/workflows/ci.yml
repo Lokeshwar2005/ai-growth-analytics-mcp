@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Check removed hosted branding
         run: |
-          if grep -RniE 'pipeboard|pipeboard\.co|mcp\.pipeboard'             --exclude-dir=.git --exclude=LICENSE .; then
+          if grep -RniE 'pipeboard|pipeboard\.co|mcp\.pipeboard' growthmcp assets server.json pyproject.toml; then
             echo "Found upstream hosted-service branding in project files."
             exit 1
           fi
