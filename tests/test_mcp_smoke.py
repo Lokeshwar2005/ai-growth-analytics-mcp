@@ -91,3 +91,36 @@ async def _smoke_test():
     assert payload["record_count"] == 2
     assert payload["metrics_requested"] == ["roas"]
     assert payload["answer"]["metrics"]["roas"] == 350 / 150
+
+    investigation_result = await asyncio.wait_for(
+        session.call_tool(
+            "investigate_growth_issue",
+            arguments={
+                "question": "Why did ROAS drop?",
+                "current_records": [
+                    {
+                        "date": "2026-09-10",
+                        "campaign_name": "Search",
+                        "spend": 120,
+                        "revenue": 80,
+                    }
+                ],
+                "previous_records": [
+                    {
+                        "date": "2026-09-03",
+                        "campaign_name": "Search",
+                        "spend": 100,
+                        "revenue": 100,
+                    }
+                ],
+            },
+        ),
+        timeout=15,
+    )
+    assert not investigation_result.isError
+    investigation = json.loads(investigation_result.content[0].text)
+    assert investigation["issue_metric"] == "roas"
+    assert investigation["target_change"]["change_pct"] == -33.333333333333336
+    assert "revenue -20.0%" in investigation["summary"]
+    assert "spend +20.0%" in investigation["summary"]
+    assert {item["component"] for item in investigation["driver_decomposition"]} == {"revenue", "spend"}
