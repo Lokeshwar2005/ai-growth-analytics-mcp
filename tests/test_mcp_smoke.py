@@ -24,6 +24,7 @@ EXPECTED_TOOLS = {
     "analyze_cohorts",
     "build_evidence_packet",
     "investigate_growth_issue",
+    "investigate_live_meta_growth_issue",
 }
 
 
