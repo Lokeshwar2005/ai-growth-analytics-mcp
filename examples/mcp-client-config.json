@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "growthmcp": {
+      "command": "python",
+      "args": ["-m", "growthmcp"],
+      "env": {
+        "META_ACCESS_TOKEN": "${META_ACCESS_TOKEN}",
+        "META_APP_ID": "${META_APP_ID}",
+        "META_APP_SECRET": "${META_APP_SECRET}"
+      }
+    }
+  }
+}
