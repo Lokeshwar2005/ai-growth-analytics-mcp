@@ -43,7 +43,7 @@ async def test_live_meta_account_insights_round_trip():
     assert isinstance(data.get("data"), list)
     assert data.get("data"), "Meta returned no campaign insight rows for last_7d."
 
-    normalized = await normalize_growth_records(data["data"], source="meta-live")
+    normalized = json.loads(await normalize_growth_records(data["data"], source="meta-live"))
     assert normalized["record_count"] == len(data["data"])
     assert normalized["records"]
 
