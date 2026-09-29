@@ -55,11 +55,11 @@ async def _smoke_test():
     assert not missing, f"Expected MCP tools were not registered: {sorted(missing)}"
     assert len(tool_names) >= len(EXPECTED_TOOLS)
 
-    # Use a fresh connection for the actual tools/call request. This avoids
-    # coupling functional verification to the lifecycle of tools/list.
+    # Keep both functional calls inside the same active MCP session.
     async with stdio_client(server) as (read, write):
         async with ClientSession(read, write) as session:
             await asyncio.wait_for(session.initialize(), timeout=15)
+
             tool_result = await asyncio.wait_for(
                 session.call_tool(
                     "analyze_growth_query",
@@ -85,42 +85,43 @@ async def _smoke_test():
                 timeout=15,
             )
 
-    assert not tool_result.isError
-    assert tool_result.content
-    payload = json.loads(tool_result.content[0].text)
-    assert payload["record_count"] == 2
-    assert payload["metrics_requested"] == ["roas"]
-    assert payload["answer"]["metrics"]["roas"] == 350 / 150
+            assert not tool_result.isError
+            assert tool_result.content
+            payload = json.loads(tool_result.content[0].text)
+            assert payload["record_count"] == 2
+            assert payload["metrics_requested"] == ["roas"]
+            assert payload["answer"]["metrics"]["roas"] == 350 / 150
 
-    investigation_result = await asyncio.wait_for(
-        session.call_tool(
-            "investigate_growth_issue",
-            arguments={
-                "question": "Why did ROAS drop?",
-                "current_records": [
-                    {
-                        "date": "2026-09-10",
-                        "campaign_name": "Search",
-                        "spend": 120,
-                        "revenue": 80,
-                    }
-                ],
-                "previous_records": [
-                    {
-                        "date": "2026-09-03",
-                        "campaign_name": "Search",
-                        "spend": 100,
-                        "revenue": 100,
-                    }
-                ],
-            },
-        ),
-        timeout=15,
-    )
-    assert not investigation_result.isError
-    investigation = json.loads(investigation_result.content[0].text)
-    assert investigation["issue_metric"] == "roas"
-    assert investigation["target_change"]["change_pct"] == -33.333333333333336
-    assert "revenue -20.0%" in investigation["summary"]
-    assert "spend +20.0%" in investigation["summary"]
-    assert {item["component"] for item in investigation["driver_decomposition"]} == {"revenue", "spend"}
+            investigation_result = await asyncio.wait_for(
+                session.call_tool(
+                    "investigate_growth_issue",
+                    arguments={
+                        "question": "Why did ROAS drop?",
+                        "current_records": [
+                            {
+                                "date": "2026-09-10",
+                                "campaign_name": "Search",
+                                "spend": 120,
+                                "revenue": 80,
+                            }
+                        ],
+                        "previous_records": [
+                            {
+                                "date": "2026-09-03",
+                                "campaign_name": "Search",
+                                "spend": 100,
+                                "revenue": 100,
+                            }
+                        ],
+                    },
+                ),
+                timeout=15,
+            )
+
+            assert not investigation_result.isError
+            investigation = json.loads(investigation_result.content[0].text)
+            assert investigation["issue_metric"] == "roas"
+            assert investigation["target_change"]["change_pct"] == -33.333333333333336
+            assert "revenue -20.0%" in investigation["summary"]
+            assert "spend +20.0%" in investigation["summary"]
+            assert {item["component"] for item in investigation["driver_decomposition"]} == {"revenue", "spend"}
