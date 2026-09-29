@@ -4,6 +4,7 @@ This test starts the real GrowthMCP stdio server and talks to it through
 the MCP Python client. It intentionally does not call Meta APIs.
 """
 import asyncio
+import json
 import os
 import sys
 
