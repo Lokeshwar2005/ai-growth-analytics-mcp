@@ -1,0 +1,6 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.lokeshwar/growthmcp",
+  "description": "AI-powered marketing intelligence and Meta Ads automation.",
+  "version": "0.1.0"
+}
