@@ -133,3 +133,6 @@ async def _smoke_test():
             assert search["comparison"]["change_pct"] == -33.333333333333336
             assert investigation["investigation_notes"]["campaigns_added"] == []
             assert investigation["investigation_notes"]["campaigns_removed"] == []
+            ranked = investigation["campaign_movement_ranked"]
+            assert ranked[0]["campaign"] == "Search"
+            assert ranked[0]["movement_magnitude_pct"] == 33.333333333333336
