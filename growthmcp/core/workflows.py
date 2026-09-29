@@ -8,7 +8,7 @@ cohort/retention summaries, and auditable evidence packets.
 import json
 from collections import defaultdict
 from datetime import date
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .analytics import _metrics
 from .server import mcp_server
@@ -176,11 +176,12 @@ async def analyze_cohorts(
 ) -> str:
     """Calculate cohort sizes and month-level retention from user event records.
 
-    Expected fields: user_id, event_date/date, and event_name. The first observed
-    month for each user is treated as that user's acquisition cohort.
+    Expected fields: user_id, event_date/date, and event_name. The earliest valid
+    event month for each user is treated as that user's acquisition cohort.
     """
-    users = {}
-    activity = defaultdict(set)
+    user_cohorts: Dict[str, str] = {}
+    user_activity: Dict[str, set] = defaultdict(set)
+
     for row in user_events:
         if not isinstance(row, dict):
             continue
@@ -188,14 +189,20 @@ async def analyze_cohorts(
         month = _cohort_month(row.get("event_date") or row.get("date"))
         if not uid or not month:
             continue
-        users.setdefault(str(uid), month)
-        activity[(str(uid), month)].add(row.get("event_name") or "event")
 
-    cohorts = defaultdict(lambda: {"users": set(), "active": defaultdict(set)})
-    for uid, cohort in users.items():
+        uid = str(uid)
+        user_activity[uid].add(month)
+        current_cohort = user_cohorts.get(uid)
+        if current_cohort is None or month < current_cohort:
+            user_cohorts[uid] = month
+
+    cohorts: Dict[str, Dict[str, Any]] = defaultdict(
+        lambda: {"users": set(), "active": defaultdict(set)}
+    )
+    for uid, cohort in user_cohorts.items():
         cohorts[cohort]["users"].add(uid)
-        for (event_uid, month), _events in activity.items():
-            if event_uid == uid and month >= cohort:
+        for month in user_activity[uid]:
+            if month >= cohort:
                 cohorts[cohort]["active"][month].add(uid)
 
     output = []
@@ -203,13 +210,20 @@ async def analyze_cohorts(
         size = len(data["users"])
         retention = {}
         for month, active in sorted(data["active"].items()):
-            if month >= cohort:
-                months_since = (int(month[:4]) - int(cohort[:4])) * 12 + int(month[5:7]) - int(cohort[5:7])
-                retention[f"month_{months_since}"] = {
-                    "active_users": len(active),
-                    "retention_pct": len(active) / size * 100 if size else 0.0,
-                }
-        output.append({"cohort": cohort, "cohort_users": size, "retention": retention})
+            months_since = (
+                (int(month[:4]) - int(cohort[:4])) * 12
+                + int(month[5:7]) - int(cohort[5:7])
+            )
+            retention[f"month_{months_since}"] = {
+                "active_users": len(active),
+                "retention_pct": len(active) / size * 100 if size else 0.0,
+            }
+        output.append({
+            "cohort": cohort,
+            "cohort_users": size,
+            "retention": retention,
+        })
+
     return json.dumps({"cohort_count": len(output), "cohorts": output}, indent=2)
 
 
