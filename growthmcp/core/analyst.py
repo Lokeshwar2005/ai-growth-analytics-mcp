@@ -75,12 +75,15 @@ def _metric_from_query(query: str) -> str:
 
 def _requested_metrics(query: str) -> List[str]:
     lowered = query.lower()
+    matches = []
+    for alias, metric in METRIC_ALIASES.items():
+        position = lowered.find(alias)
+        if position >= 0:
+            matches.append((position, -len(alias), metric))
     found = []
-    for alias in sorted(METRIC_ALIASES, key=len, reverse=True):
-        if alias in lowered:
-            metric = METRIC_ALIASES[alias]
-            if metric not in found:
-                found.append(metric)
+    for _, _, metric in sorted(matches):
+        if metric not in found:
+            found.append(metric)
     return found or ["roas"]
 
 
