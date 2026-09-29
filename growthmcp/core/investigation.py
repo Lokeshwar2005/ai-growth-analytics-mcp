@@ -68,6 +68,34 @@ def _investigation_summary(metric: str, cur: Dict[str, float], prev: Dict[str, f
     return f"{metric} {direction} by {abs(change):.1f}%{suffix}"
 
 
+def _rank_breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> List[Dict[str, Any]]:
+    """Return campaign-level movements ordered by absolute metric change."""
+    current_groups = _group(rows, "campaign_name")
+    previous_groups = _group(prev, "campaign_name")
+    ranked = []
+    for name in sorted(set(current_groups) | set(previous_groups)):
+        cur = _aggregate(current_groups.get(name, []))
+        old = _aggregate(previous_groups.get(name, []))
+        comparison = _delta(cur, old, metric)
+        change = comparison.get("change_pct")
+        ranked.append({
+            "campaign": name,
+            "current_metrics": cur,
+            "previous_metrics": old,
+            "comparison": comparison,
+            "movement_magnitude_pct": abs(change) if change is not None else None,
+            "current_record_count": len(current_groups.get(name, [])),
+            "previous_record_count": len(previous_groups.get(name, [])),
+        })
+    return sorted(
+        ranked,
+        key=lambda item: (
+            item["movement_magnitude_pct"] is None,
+            -(item["movement_magnitude_pct"] or 0.0),
+            item["campaign"],
+        ),
+    )
+
 def _breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> Dict[str, Any]:
     """Compare current and previous performance at each investigation dimension.
 
@@ -123,6 +151,7 @@ async def investigate_growth_issue(question: str, current_records: List[Dict[str
             "campaigns_added": sorted(current_campaigns - previous_campaigns),
             "campaigns_removed": sorted(previous_campaigns - current_campaigns),
         }
+        result["campaign_movement_ranked"] = _rank_breakdowns(current, previous, metric)
     if user_events:
         result["cohort_context"] = {"user_event_count": len([r for r in user_events if isinstance(r, dict)]), "note": "Use analyze_cohorts for detailed retention output."}
     return json.dumps(result, indent=2)
