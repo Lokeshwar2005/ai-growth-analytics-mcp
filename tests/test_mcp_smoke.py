@@ -43,41 +43,46 @@ async def _smoke_test():
         env=env,
     )
 
+    # Validate registration on one clean MCP connection.
     async with stdio_client(server) as (read, write):
         async with ClientSession(read, write) as session:
             await asyncio.wait_for(session.initialize(), timeout=15)
             result = await asyncio.wait_for(session.list_tools(), timeout=15)
-            assert session.is_connected(), "MCP session disconnected before tool call"
 
     tool_names = {tool.name for tool in result.tools}
     missing = EXPECTED_TOOLS - tool_names
     assert not missing, f"Expected MCP tools were not registered: {sorted(missing)}"
     assert len(tool_names) >= len(EXPECTED_TOOLS)
 
-    tool_result = await asyncio.wait_for(
-        session.call_tool(
-            "analyze_growth_query",
-            arguments={
-                "query": "What is ROAS?",
-                "records": [
-                    {
-                        "date": "2026-09-01",
-                        "campaign_name": "Search",
-                        "spend": 100,
-                        "revenue": 250,
+    # Use a fresh connection for the actual tools/call request. This avoids
+    # coupling functional verification to the lifecycle of tools/list.
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            await asyncio.wait_for(session.initialize(), timeout=15)
+            tool_result = await asyncio.wait_for(
+                session.call_tool(
+                    "analyze_growth_query",
+                    arguments={
+                        "query": "What is ROAS?",
+                        "records": [
+                            {
+                                "date": "2026-09-01",
+                                "campaign_name": "Search",
+                                "spend": 100,
+                                "revenue": 250,
+                            },
+                            {
+                                "date": "2026-09-02",
+                                "campaign_name": "Search",
+                                "spend": 50,
+                                "revenue": 100,
+                            },
+                        ],
+                        "source": "mcp-smoke-test",
                     },
-                    {
-                        "date": "2026-09-02",
-                        "campaign_name": "Search",
-                        "spend": 50,
-                        "revenue": 100,
-                    },
-                ],
-                "source": "mcp-smoke-test",
-            },
-        ),
-        timeout=15,
-    )
+                ),
+                timeout=15,
+            )
 
     assert not tool_result.isError
     assert tool_result.content
