@@ -430,14 +430,6 @@ def meta_api_tool(func):
                     logger.error("ISSUE DETECTED: No valid Meta App ID configured")
                     logger.error("ACTION REQUIRED: Set META_APP_ID environment variable with a valid App ID")
 
-                if os.environ.get("GROWTHMCP_API_TOKEN"):
-                    logger.error(
-                        "NOTE: GROWTHMCP_API_TOKEN is set but is ignored by this package. "
-                        "Use META_ACCESS_TOKEN, or the hosted MCP at "
-                        " which does accept it. "
-                        "The GrowthMCP CLI also still uses it, so leave it set if you use that."
-                    )
-
                 return json.dumps({
                     "error": {
                         "message": "Authentication Required",
