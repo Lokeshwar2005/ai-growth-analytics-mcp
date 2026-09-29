@@ -83,9 +83,7 @@ if ENABLE_REPORT_GENERATION:
                     "Creative performance insights",
                     "Automated scheduling options"
                 ],
-                "upgrade_url": "https://github.com/Lokeshwar2005/ai-growth-analytics-mcp/upgrade",
-                "contact_email": "info@growthmcp.co",
-                "early_access": "Contact us for early access and special pricing"
+                "documentation":"https://github.com/Lokeshwar2005/ai-growth-analytics-mcp"
             },
             "request_parameters": {
                 "account_id": account_id,
