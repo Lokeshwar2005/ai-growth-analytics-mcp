@@ -43,6 +43,31 @@ def _drivers(cur: Dict[str, float], prev: Dict[str, float], metric: str) -> List
     return [{"component": k, "delta": _delta(cur, prev, k)} for k in keys]
 
 
+def _investigation_summary(metric: str, cur: Dict[str, float], prev: Dict[str, float]) -> str:
+    if not prev:
+        return f"Current-period {metric} is {cur.get(metric, 0.0):.2f}; no previous period was supplied."
+    target = _delta(cur, prev, metric)
+    change = target["change_pct"]
+    if change is None:
+        return f"Current-period {metric} is {cur.get(metric, 0.0):.2f}; the previous period has no usable baseline."
+    direction = "increased" if change > 0 else "decreased" if change < 0 else "was unchanged"
+    components = {
+        "roas": ("revenue", "spend"),
+        "cpl": ("spend", "leads"),
+        "cpa": ("spend", "conversions"),
+        "ctr": ("clicks", "impressions"),
+        "cpc": ("spend", "clicks"),
+        "conversion_rate": ("conversions", "clicks"),
+    }.get(metric, ())
+    component_text = []
+    for key in components:
+        delta = _delta(cur, prev, key)["change_pct"]
+        if delta is not None:
+            component_text.append(f"{key} {delta:+.1f}%")
+    suffix = f"; component movements: {', '.join(component_text)}." if component_text else "."
+    return f"{metric} {direction} by {abs(change):.1f}%{suffix}"
+
+
 def _breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> Dict[str, Any]:
     result = {}
     for dimension in ("platform", "campaign_name", "adset_name", "creative_name"):
@@ -71,6 +96,7 @@ async def investigate_growth_issue(question: str, current_records: List[Dict[str
         "status": "comparison_available" if previous else "current_period_only",
         "current_metrics": cur, "previous_metrics": old,
         "target_change": _delta(cur, old, metric) if previous else None,
+        "summary": _investigation_summary(metric, cur, old),
         "driver_decomposition": _drivers(cur, old, metric) if previous else [],
         "breakdowns": _breakdowns(current, previous, metric) if previous else {},
         "evidence": {"current_record_count": len(current), "previous_record_count": len(previous), "current_rows": current[:50], "previous_rows": previous[:50]},
