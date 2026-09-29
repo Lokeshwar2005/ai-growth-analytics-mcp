@@ -47,6 +47,7 @@ async def _smoke_test():
         async with ClientSession(read, write) as session:
             await asyncio.wait_for(session.initialize(), timeout=15)
             result = await asyncio.wait_for(session.list_tools(), timeout=15)
+            assert session.is_connected(), "MCP session disconnected before tool call"
 
     tool_names = {tool.name for tool in result.tools}
     missing = EXPECTED_TOOLS - tool_names
