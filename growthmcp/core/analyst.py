@@ -75,13 +75,23 @@ def _metric_from_query(query: str) -> str:
 
 def _requested_metrics(query: str) -> List[str]:
     lowered = query.lower()
-    matches = []
-    for alias, metric in METRIC_ALIASES.items():
-        position = lowered.find(alias)
-        if position >= 0:
-            matches.append((position, -len(alias), metric))
+    candidates = []
+    for alias in sorted(METRIC_ALIASES, key=len, reverse=True):
+        start = lowered.find(alias)
+        while start >= 0:
+            end = start + len(alias)
+            candidates.append((start, end, alias, METRIC_ALIASES[alias]))
+            start = lowered.find(alias, start + 1)
+
+    # Keep the longest alias when aliases overlap at the same text span.
+    selected = []
+    for start, end, alias, metric in sorted(candidates, key=lambda item: (item[0], -(item[1] - item[0]))):
+        if any(start < existing_end and end > existing_start for existing_start, existing_end, _ in selected):
+            continue
+        selected.append((start, end, metric))
+
     found = []
-    for _, _, metric in sorted(matches):
+    for _, _, metric in selected:
         if metric not in found:
             found.append(metric)
     return found or ["roas"]
