@@ -155,7 +155,7 @@ def _translate_asset_customization_rules(
 
 
 # All writable creative_features_spec keys for Meta Ads API v24+.
-# Mirrors ALL_ENHANCEMENT_KEYS in growthmcp.co/lib/meta-ads-enhancement-keys.ts.
+# Mirrors ALL_ENHANCEMENT_KEYS in Meta API creative enhancement schema.
 # Setting each key to {"enroll_status": "OPT_OUT"} disables the enhancement.
 # NOTE: The legacy "standard_enhancements" key is deprecated for POST operations
 # (Meta error subcode 3858504) — individual keys must be used instead.
@@ -1446,7 +1446,7 @@ async def upload_ad_image(
                     "image_url": image_url,
                     "details": str(download_error),
                     "suggestions": [
-                        "Easiest fix: upload your image at https://github.com/Lokeshwar2005/ai-growth-analytics-mcp/creatives, then copy the image hash and use it directly instead of a URL.",
+                        "Easiest fix: upload your image at https://github.com/Lokeshwar2005/ai-growth-analytics-mcp, then copy the image hash and use it directly instead of a URL.",
                         "Make sure the link is publicly reachable (no login, VPN, or IP restrictions). Local file paths (file://...) cannot be accessed by the server.",
                         "If the image is hosted on a private app or server, move it to a public URL or a CDN and try again.",
                         "Verify the URL is correct and serves the actual image file."
@@ -1459,7 +1459,7 @@ async def upload_ad_image(
                     "reason": "The image link doesn’t appear to be publicly accessible or didn’t return any data.",
                     "image_url": image_url,
                     "suggestions": [
-                        "Easiest fix: upload your image at https://github.com/Lokeshwar2005/ai-growth-analytics-mcp/creatives, then copy the image hash and use it directly instead of a URL.",
+                        "Easiest fix: upload your image at https://github.com/Lokeshwar2005/ai-growth-analytics-mcp, then copy the image hash and use it directly instead of a URL.",
                         "Double-check that the link is public and does not require login, VPN, or IP allow-listing. Local file paths (file://...) cannot be accessed by the server.",
                         "If the image is stored in a private app (for example, a self-hosted gallery), upload it to a public URL or a CDN and try again.",
                         "Confirm the URL is correct and points directly to an image file (e.g., .jpg, .png)."
