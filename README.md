@@ -14,6 +14,10 @@ GrowthMCP is a derivative project built from the Meta Ads MCP server by **ARTELL
 - Native campaign duplication through Meta Graph API
 - Growth analytics: ROAS, CPA, CPL, CTR, CPC, conversion rate, and anomaly detection
 - Deterministic AI Growth Analyst query engine with filters, calculations, and evidence metadata
+- Canonical cross-platform marketing schema
+- Campaign investigation and creative diagnostics
+- Cohort and retention analytics
+- Auditable evidence packets
 - Local OAuth authentication with your own Meta developer application
 - Bearer-token authentication for Streamable HTTP
 - stdio and Streamable HTTP MCP transports
@@ -77,6 +81,11 @@ Available tools include:
 - detect_metric_anomalies
 - analyze_growth_query
 - get_metric_definition
+- normalize_growth_records
+- investigate_campaign
+- analyze_creatives
+- analyze_cohorts
+- build_evidence_packet
 - duplicate_campaign
 
 Example analyst queries:
@@ -86,6 +95,8 @@ Example analyst queries:
 - `What is our conversion rate and spend?`
 
 The analyst is deterministic: it calculates only from records supplied to the tool, and its response includes the filtered record count, filters, calculation method, and evidence rows. It does not claim live data or call an external LLM.
+
+The workflow layer provides a canonical schema so Meta, Google, TikTok, CRM, and product-event records can be normalized into common fields. Campaign investigations expose platform/ad-set/creative breakdowns, creative analysis exposes delivery metrics, cohort analysis calculates month-level retention, and evidence packets preserve source rows and calculation limitations.
 
 See examples/mcp-client-config.json for a local MCP client configuration example.
 
