@@ -44,7 +44,8 @@ packages = ["growthmcp"]
 [tool.pytest.ini_options]
 markers = [
     "e2e: marks tests as end-to-end (requires running MCP server) - excluded from default runs",
+    "live: marks tests that call real external services - excluded from default runs",
 ]
-addopts = "-v --strict-markers -m 'not e2e'"
+addopts = "-v --strict-markers -m 'not e2e and not live'"
 testpaths = ["tests"]
 asyncio_mode = "auto"
