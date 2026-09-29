@@ -11,6 +11,8 @@ GrowthMCP is a derivative project built from the Meta Ads MCP server by **ARTELL
 - Creative operations and performance insights
 - Audience and targeting research
 - Budget scheduling
+- Native campaign duplication through Meta Graph API
+- Growth analytics: ROAS, CPA, CPL, CTR, CPC, conversion rate, and anomaly detection
 - Local OAuth authentication with your own Meta developer application
 - Bearer-token authentication for Streamable HTTP
 - stdio and Streamable HTTP MCP transports
@@ -62,3 +64,23 @@ Upstream project:
 https://github.com/pipeboard-co/meta-ads-mcp
 
 The upstream license text and attribution are intentionally retained. GrowthMCP branding does not transfer or imply ownership of the upstream work.
+
+## Growth analytics layer
+
+The analytics tools are intentionally platform-neutral. They accept metric records from Meta insights or other systems and calculate common acquisition metrics without requiring a hosted analytics service.
+
+Available tools include:
+
+- calculate_growth_metrics
+- compare_campaign_metrics
+- detect_metric_anomalies
+- duplicate_campaign
+
+See examples/mcp-client-config.json for a local MCP client configuration example.
+
+## Security notes
+
+- Keep Meta access tokens and app secrets outside source control.
+- The local OAuth flow uses a localhost callback and state validation.
+- Streamable HTTP can accept an operator-provided Bearer token; deploy it behind your own authentication and TLS when exposed beyond localhost.
+- GrowthMCP does not require or call the upstream hosted MCP service.
