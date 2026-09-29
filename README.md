@@ -127,6 +127,8 @@ pytest -m live tests/test_meta_live.py
 
 The live test is excluded from the default test suite and GitHub Actions. Never commit the access token or app secret.
 
+The `investigate_live_meta_growth_issue` tool fetches two bounded Meta Insights periods, follows pagination up to a configurable page limit, normalizes Meta action arrays, and passes the records into the deterministic investigation engine. It is read-only.
+
 ## Docker
 
 The Docker image runs GrowthMCP as a non-root user and exposes Streamable HTTP on port 8080. Credentials are supplied at runtime rather than baked into the image.
