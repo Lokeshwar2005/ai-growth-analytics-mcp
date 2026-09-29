@@ -10,7 +10,7 @@ import functools
 import os
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 from . import auth
-from .auth import needs_authentication, auth_manager, start_callback_server, shutdown_callback_server
+from .auth import needs_authentication, auth_manager, start_callback_server
 from .utils import logger
 
 
