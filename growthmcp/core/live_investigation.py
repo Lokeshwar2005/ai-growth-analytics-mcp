@@ -5,7 +5,7 @@ Read-only and opt-in: the operator supplies Meta credentials at runtime.
 
 import json
 from datetime import date
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from .api import make_api_request
 from .investigation import investigate_growth_issue
@@ -32,6 +32,25 @@ def _rows(data: Any) -> list[dict]:
         raise ValueError("Meta API response did not contain a data list")
     return [row for row in rows if isinstance(row, dict)]
 
+async def _fetch_period(endpoint: str, access_token: Optional[str], base_params: Dict[str, Any], time_range: Dict[str, str], max_pages: int) -> List[dict]:
+    """Fetch a bounded set of Insights pages without exposing paging URLs."""
+    rows: List[dict] = []
+    after = ""
+    for _ in range(max_pages):
+        params = {**base_params, "time_range": json.dumps(time_range)}
+        if after:
+            params["after"] = after
+        data = await make_api_request(endpoint, access_token, params)
+        page_rows = _rows(data)
+        rows.extend(page_rows)
+        paging = data.get("paging", {}) if isinstance(data, dict) else {}
+        cursors = paging.get("cursors", {}) if isinstance(paging, dict) else {}
+        next_after = cursors.get("after") if isinstance(cursors, dict) else None
+        if not next_after or not page_rows:
+            break
+        after = str(next_after)
+    return rows
+
 
 @mcp_server.tool()
 async def investigate_live_meta_growth_issue(
@@ -43,10 +62,13 @@ async def investigate_live_meta_growth_issue(
     level: str = "campaign",
     breakdown: str = "",
     limit: int = 100,
+    max_pages: int = 10,
 ) -> str:
     """Fetch two Meta Insights periods and run the deterministic investigation engine."""
     if not account_id.strip():
         return json.dumps({"error": "account_id is required"}, indent=2)
+    if max_pages < 1 or max_pages > 100:
+        return json.dumps({"error": "max_pages must be between 1 and 100"}, indent=2)
     try:
         current_range = _validate_range(current_time_range, "current_time_range")
         previous_range = _validate_range(previous_time_range, "previous_time_range")
@@ -65,16 +87,12 @@ async def investigate_live_meta_growth_issue(
         params["breakdowns"] = breakdown
 
     try:
-        current_data = await make_api_request(
-            endpoint, access_token,
-            {**params, "time_range": json.dumps(current_range)},
+        current_rows = await _fetch_period(
+            endpoint, access_token, params, current_range, max_pages
         )
-        previous_data = await make_api_request(
-            endpoint, access_token,
-            {**params, "time_range": json.dumps(previous_range)},
+        previous_rows = await _fetch_period(
+            endpoint, access_token, params, previous_range, max_pages
         )
-        current_rows = _rows(current_data)
-        previous_rows = _rows(previous_data)
 
         result = json.loads(await investigate_growth_issue(
             question,
