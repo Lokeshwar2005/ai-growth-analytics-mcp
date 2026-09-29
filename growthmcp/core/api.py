@@ -442,14 +442,14 @@ def meta_api_tool(func):
                             },
                             "options": [
                                 {
-                                    "option": "Use the hosted GrowthMCP (no Meta app needed)",
-                                    "url": "",
-                                    "how": "Point your MCP client at this URL and authenticate with your GrowthMCP API token."
-                                },
-                                {
                                     "option": "Bring your own Meta access token",
                                     "url": "https://developers.facebook.com/apps/",
                                     "how": "Create your own Meta app, generate an access token, and set META_ACCESS_TOKEN."
+                                },
+                                {
+                                    "option": "Use local Meta OAuth",
+                                    "url": auth_url,
+                                    "how": "Configure META_APP_ID and META_APP_SECRET for your own Meta developer application, then complete the local OAuth flow."
                                 }
                             ],
                             "troubleshooting": "Check logs for TOKEN VALIDATION FAILED messages",
