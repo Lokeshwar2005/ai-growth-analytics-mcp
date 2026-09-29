@@ -13,6 +13,7 @@ GrowthMCP is a derivative project built from the Meta Ads MCP server by **ARTELL
 - Budget scheduling
 - Native campaign duplication through Meta Graph API
 - Growth analytics: ROAS, CPA, CPL, CTR, CPC, conversion rate, and anomaly detection
+- Deterministic AI Growth Analyst query engine with filters, calculations, and evidence metadata
 - Local OAuth authentication with your own Meta developer application
 - Bearer-token authentication for Streamable HTTP
 - stdio and Streamable HTTP MCP transports
@@ -74,7 +75,17 @@ Available tools include:
 - calculate_growth_metrics
 - compare_campaign_metrics
 - detect_metric_anomalies
+- analyze_growth_query
+- get_metric_definition
 - duplicate_campaign
+
+Example analyst queries:
+
+- `Show ROAS and CPL for Launch A`
+- `Give campaign performance from 2026-09-01 to 2026-09-30`
+- `What is our conversion rate and spend?`
+
+The analyst is deterministic: it calculates only from records supplied to the tool, and its response includes the filtered record count, filters, calculation method, and evidence rows. It does not claim live data or call an external LLM.
 
 See examples/mcp-client-config.json for a local MCP client configuration example.
 
