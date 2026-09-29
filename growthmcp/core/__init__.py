@@ -22,6 +22,7 @@ from .analytics import calculate_growth_metrics, compare_campaign_metrics, detec
 from .analyst import analyze_growth_query, get_metric_definition
 from .workflows import normalize_growth_records, investigate_campaign, analyze_creatives, analyze_cohorts, build_evidence_packet
 from .investigation import investigate_growth_issue
+from .live_investigation import investigate_live_meta_growth_issue
 from . import authentication, ads_library, reports
 
 __all__ = [
@@ -39,4 +40,5 @@ __all__ = [
     "detect_metric_anomalies", "analyze_growth_query", "get_metric_definition",
     "normalize_growth_records", "investigate_campaign", "analyze_creatives",
     "analyze_cohorts", "build_evidence_packet", "investigate_growth_issue",
+    "investigate_live_meta_growth_issue",
 ]
