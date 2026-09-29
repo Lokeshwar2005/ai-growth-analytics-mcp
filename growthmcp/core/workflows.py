@@ -29,8 +29,28 @@ def _num(row: Dict[str, Any], key: str) -> float:
         return 0.0
 
 
+def _action_value(items: Any, action_types: tuple[str, ...]) -> float:
+    """Extract and sum values for selected Meta action/action-value types."""
+    if not isinstance(items, list):
+        return 0.0
+    wanted = set(action_types)
+    total = 0.0
+    for item in items:
+        if not isinstance(item, dict) or item.get("action_type") not in wanted:
+            continue
+        try:
+            total += float(item.get("value", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+    return total
+
+
 def canonicalize_record(row: Dict[str, Any], source: str = "unknown") -> Dict[str, Any]:
-    """Map common ad-platform field names into GrowthMCP's canonical schema."""
+    """Map common ad-platform field names into GrowthMCP's canonical schema.
+
+    Meta Insights commonly stores leads, purchases and purchase value inside
+    actions/action_values arrays rather than top-level fields.
+    """
     aliases = {
         "date": ("date", "day", "event_date", "date_start"),
         "source": ("source",),
@@ -59,6 +79,20 @@ def canonicalize_record(row: Dict[str, Any], source: str = "unknown") -> Dict[st
         result[field] = value
     for key in ("spend", "revenue", "impressions", "clicks", "leads", "conversions"):
         result[key] = _num(result, key)
+
+    # Meta Insights action arrays -> canonical acquisition/revenue metrics.
+    if not result["leads"]:
+        result["leads"] = _action_value(row.get("actions"), ("lead", "onsite_conversion.lead"))
+    if not result["conversions"]:
+        result["conversions"] = _action_value(
+            row.get("actions"),
+            ("purchase", "offsite_conversion.fb_pixel_purchase", "omni_purchase"),
+        )
+    if not result["revenue"]:
+        result["revenue"] = _action_value(
+            row.get("action_values"),
+            ("purchase", "offsite_conversion.fb_pixel_purchase", "omni_purchase"),
+        )
     return result
 
 
