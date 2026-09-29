@@ -33,7 +33,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/Lokeshwar2005/ai-growth-analytics-mcp"
-Bug Tracker = "https://github.com/Lokeshwar2005/ai-growth-analytics-mcp/issues"
+"Bug Tracker" = "https://github.com/Lokeshwar2005/ai-growth-analytics-mcp/issues"
 
 [project.scripts]
 growthmcp = "growthmcp:entrypoint"
