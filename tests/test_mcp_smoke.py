@@ -125,3 +125,11 @@ async def _smoke_test():
             assert "revenue -20.0%" in investigation["summary"]
             assert "spend +20.0%" in investigation["summary"]
             assert {item["component"] for item in investigation["driver_decomposition"]} == {"revenue", "spend"}
+
+            campaign_rows = investigation["breakdowns"]["campaign_name"]
+            search = next(item for item in campaign_rows if item["value"] == "Search")
+            assert search["current_record_count"] == 1
+            assert search["previous_record_count"] == 1
+            assert search["comparison"]["change_pct"] == -33.333333333333336
+            assert investigation["investigation_notes"]["campaigns_added"] == []
+            assert investigation["investigation_notes"]["campaigns_removed"] == []
