@@ -66,3 +66,21 @@ async def test_investigation_tool_returns_driver_evidence():
     assert result["target_change"]["change_pct"] == -33.333333333333336
     assert {item["component"] for item in result["driver_decomposition"]} == {"revenue", "spend"}
     assert result["evidence"]["current_record_count"] == 1
+
+
+def test_canonicalize_meta_action_arrays():
+    row = {
+        "campaign_name": "Meta Search",
+        "spend": "120",
+        "impressions": "1000",
+        "clicks": "50",
+        "actions": [
+            {"action_type": "lead", "value": "8"},
+            {"action_type": "purchase", "value": "3"},
+        ],
+        "action_values": [{"action_type": "purchase", "value": "360"}],
+    }
+    result = canonicalize_record(row, "meta-live")
+    assert result["leads"] == 8.0
+    assert result["conversions"] == 3.0
+    assert result["revenue"] == 360.0
