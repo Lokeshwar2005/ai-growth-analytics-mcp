@@ -29,20 +29,23 @@ def _num(row: Dict[str, Any], key: str) -> float:
         return 0.0
 
 
-def _action_value(items: Any, action_types: tuple[str, ...]) -> float:
-    """Extract and sum values for selected Meta action/action-value types."""
+def _action_value(items: Any, *action_type_groups: tuple[str, ...]) -> float:
+    """Extract a preferred Meta action value without double-counting rollups."""
     if not isinstance(items, list):
         return 0.0
-    wanted = set(action_types)
-    total = 0.0
-    for item in items:
-        if not isinstance(item, dict) or item.get("action_type") not in wanted:
-            continue
-        try:
-            total += float(item.get("value", 0) or 0)
-        except (TypeError, ValueError):
-            continue
-    return total
+    for group in action_type_groups:
+        wanted = set(group)
+        total = 0.0
+        for item in items:
+            if not isinstance(item, dict) or item.get("action_type") not in wanted:
+                continue
+            try:
+                total += float(item.get("value", 0) or 0)
+            except (TypeError, ValueError):
+                continue
+        if total:
+            return total
+    return 0.0
 
 
 def canonicalize_record(row: Dict[str, Any], source: str = "unknown") -> Dict[str, Any]:
@@ -82,16 +85,24 @@ def canonicalize_record(row: Dict[str, Any], source: str = "unknown") -> Dict[st
 
     # Meta Insights action arrays -> canonical acquisition/revenue metrics.
     if not result["leads"]:
-        result["leads"] = _action_value(row.get("actions"), ("lead", "onsite_conversion.lead"))
+        result["leads"] = _action_value(
+            row.get("actions"),
+            ("lead",),
+            ("onsite_conversion.lead",),
+        )
     if not result["conversions"]:
         result["conversions"] = _action_value(
             row.get("actions"),
-            ("purchase", "offsite_conversion.fb_pixel_purchase", "omni_purchase"),
+            ("purchase",),
+            ("offsite_conversion.fb_pixel_purchase",),
+            ("omni_purchase",),
         )
     if not result["revenue"]:
         result["revenue"] = _action_value(
             row.get("action_values"),
-            ("purchase", "offsite_conversion.fb_pixel_purchase", "omni_purchase"),
+            ("purchase",),
+            ("offsite_conversion.fb_pixel_purchase",),
+            ("omni_purchase",),
         )
     return result
 
