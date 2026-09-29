@@ -52,3 +52,35 @@ async def _smoke_test():
     missing = EXPECTED_TOOLS - tool_names
     assert not missing, f"Expected MCP tools were not registered: {sorted(missing)}"
     assert len(tool_names) >= len(EXPECTED_TOOLS)
+
+    tool_result = await asyncio.wait_for(
+        session.call_tool(
+            "analyze_growth_query",
+            arguments={
+                "query": "What is ROAS?",
+                "records": [
+                    {
+                        "date": "2026-09-01",
+                        "campaign_name": "Search",
+                        "spend": 100,
+                        "revenue": 250,
+                    },
+                    {
+                        "date": "2026-09-02",
+                        "campaign_name": "Search",
+                        "spend": 50,
+                        "revenue": 100,
+                    },
+                ],
+                "source": "mcp-smoke-test",
+            },
+        ),
+        timeout=15,
+    )
+
+    assert not tool_result.isError
+    assert tool_result.content
+    payload = json.loads(tool_result.content[0].text)
+    assert payload["record_count"] == 2
+    assert payload["metrics_requested"] == ["roas"]
+    assert payload["answer"]["metrics"]["roas"] == 350 / 150
