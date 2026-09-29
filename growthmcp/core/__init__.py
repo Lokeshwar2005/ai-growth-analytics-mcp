@@ -21,6 +21,7 @@ from .duplication import duplicate_campaign
 from .analytics import calculate_growth_metrics, compare_campaign_metrics, detect_metric_anomalies
 from .analyst import analyze_growth_query, get_metric_definition
 from .workflows import normalize_growth_records, investigate_campaign, analyze_creatives, analyze_cohorts, build_evidence_packet
+from .investigation import investigate_growth_issue
 from . import authentication, ads_library, reports
 
 __all__ = [
@@ -37,5 +38,5 @@ __all__ = [
     "duplicate_campaign", "calculate_growth_metrics", "compare_campaign_metrics",
     "detect_metric_anomalies", "analyze_growth_query", "get_metric_definition",
     "normalize_growth_records", "investigate_campaign", "analyze_creatives",
-    "analyze_cohorts", "build_evidence_packet",
+    "analyze_cohorts", "build_evidence_packet", "investigate_growth_issue",
 ]
