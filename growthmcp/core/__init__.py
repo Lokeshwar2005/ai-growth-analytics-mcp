@@ -1,0 +1,1 @@
+"""GrowthMCP core package."""
