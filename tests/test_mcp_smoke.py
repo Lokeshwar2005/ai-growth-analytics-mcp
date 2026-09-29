@@ -101,16 +101,32 @@ async def _smoke_test():
                             {
                                 "date": "2026-09-10",
                                 "campaign_name": "Search",
-                                "spend": 120,
-                                "revenue": 80,
+                                "creative_name": "Creative A",
+                                "spend": 70,
+                                "revenue": 40,
+                            },
+                            {
+                                "date": "2026-09-10",
+                                "campaign_name": "Search",
+                                "creative_name": "Creative B",
+                                "spend": 50,
+                                "revenue": 40,
                             }
                         ],
                         "previous_records": [
                             {
                                 "date": "2026-09-03",
                                 "campaign_name": "Search",
-                                "spend": 100,
-                                "revenue": 100,
+                                "creative_name": "Creative A",
+                                "spend": 50,
+                                "revenue": 60,
+                            },
+                            {
+                                "date": "2026-09-03",
+                                "campaign_name": "Search",
+                                "creative_name": "Creative B",
+                                "spend": 50,
+                                "revenue": 40,
                             }
                         ],
                     },
@@ -136,3 +152,8 @@ async def _smoke_test():
             ranked = investigation["campaign_movement_ranked"]
             assert ranked[0]["campaign"] == "Search"
             assert ranked[0]["movement_magnitude_pct"] == 33.333333333333336
+            creative_ranked = investigation["creative_movement_ranked"]
+            assert creative_ranked[0]["value"] == "Creative A"
+            assert creative_ranked[0]["movement_magnitude_pct"] == 52.38095238095239
+            assert creative_ranked[0]["current_record_count"] == 1
+            assert creative_ranked[0]["previous_record_count"] == 1
