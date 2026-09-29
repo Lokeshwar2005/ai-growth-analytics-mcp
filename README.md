@@ -100,6 +100,31 @@ The workflow layer provides a canonical schema so Meta, Google, TikTok, CRM, and
 
 See examples/mcp-client-config.json for a local MCP client configuration example.
 
+## MCP protocol smoke test
+
+The repository includes a credential-free end-to-end smoke test that starts the real stdio server, initializes an MCP client session, and verifies that the expected growth and Meta Ads tools are registered. It does not call Meta APIs.
+
+Run it locally with:
+
+```bash
+pytest -m e2e tests/test_mcp_smoke.py
+```
+
+CI runs this smoke test separately from the unit-test matrix.
+
+## Docker
+
+The Docker image runs GrowthMCP as a non-root user and exposes Streamable HTTP on port 8080. Credentials are supplied at runtime rather than baked into the image.
+
+```bash
+docker build -t growthmcp .
+docker run --rm -p 8080:8080 \
+  -e META_ACCESS_TOKEN="$META_ACCESS_TOKEN" \
+  growthmcp
+```
+
+For anything beyond localhost or a trusted private network, put the service behind your own TLS and authentication layer.
+
 ## Security notes
 
 - Keep Meta access tokens and app secrets outside source control.
