@@ -100,6 +100,55 @@ The workflow layer provides a canonical schema so Meta, Google, TikTok, CRM, and
 
 See examples/mcp-client-config.json for a local MCP client configuration example.
 
+## Inspecting with MCP Inspector
+
+GrowthMCP is fully compatible with `@modelcontextprotocol/inspector@2.8.0`.
+
+### Web Inspector
+Launch the interactive browser UI to test tools and inspect schemas:
+
+```bash
+cd ~/ai-growth-analytics-mcp
+
+npx -y @modelcontextprotocol/inspector@2.8.0 \
+  -e META_ACCESS_TOKEN="$META_ACCESS_TOKEN" \
+  -- python3 -m growthmcp
+```
+
+### CLI Inspector
+Run headless inspections and tool invocations:
+
+```bash
+# Handshake initialization
+npx -y @modelcontextprotocol/inspector@2.8.0 --cli \
+  python3 -m growthmcp \
+  -- \
+  --method initialize
+
+# List tools
+npx -y @modelcontextprotocol/inspector@2.8.0 --cli \
+  python3 -m growthmcp \
+  -- \
+  --method tools/list
+
+# Call analyze_growth_query
+npx -y @modelcontextprotocol/inspector@2.8.0 --cli \
+  python3 -m growthmcp \
+  -- \
+  --method tools/call \
+  --tool-name analyze_growth_query \
+  --tool-args-json '{"query":"What is the ROAS?","records":[{"date":"2026-09-21","platform":"Meta","campaign_name":"Brand Search","spend":120,"revenue":300,"impressions":12000,"clicks":240},{"date":"2026-09-21","platform":"Meta","campaign_name":"Prospecting","spend":300,"revenue":200,"impressions":40000,"clicks":600}]}'
+```
+
+> **Note on Inspector 2.8.0 Syntax**: The important point is that Python's `-m growthmcp` must remain part of the target command. The Inspector separator `--` separates the target command from Inspector options.
+> If GrowthMCP is installed in the active environment, the package binary can also be called directly:
+> ```bash
+> npx -y @modelcontextprotocol/inspector@2.8.0 --cli growthmcp --method initialize
+> ```
+> See [docs/MCP_INSPECTOR.md](docs/MCP_INSPECTOR.md) for full details and troubleshooting.
+
+
+
 ## MCP protocol smoke test
 
 The repository includes a credential-free end-to-end smoke test that starts the real stdio server, initializes an MCP client session, and verifies that the expected growth and Meta Ads tools are registered. It does not call Meta APIs.
