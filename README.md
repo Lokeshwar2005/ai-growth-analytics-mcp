@@ -112,6 +112,21 @@ pytest -m e2e tests/test_mcp_smoke.py
 
 CI runs this smoke test separately from the unit-test matrix.
 
+### Optional live Meta API validation
+
+A separate opt-in test can validate the full path against a real Meta Ads account without storing credentials in the repository or CI. It requests the last 7 days of campaign insights, normalizes the returned rows, and runs the GrowthMCP analyst on the live data.
+
+Set these only in your local shell:
+
+```bash
+export GROWTHMCP_LIVE_META_TEST=1
+export META_ACCESS_TOKEN="your-access-token"
+export GROWTHMCP_META_ACCOUNT_ID="act_123456789"
+pytest -m live tests/test_meta_live.py
+```
+
+The live test is excluded from the default test suite and GitHub Actions. Never commit the access token or app secret.
+
 ## Docker
 
 The Docker image runs GrowthMCP as a non-root user and exposes Streamable HTTP on port 8080. Credentials are supplied at runtime rather than baked into the image.
