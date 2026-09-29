@@ -68,10 +68,10 @@ def _investigation_summary(metric: str, cur: Dict[str, float], prev: Dict[str, f
     return f"{metric} {direction} by {abs(change):.1f}%{suffix}"
 
 
-def _rank_breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> List[Dict[str, Any]]:
-    """Return campaign-level movements ordered by absolute metric change."""
-    current_groups = _group(rows, "campaign_name")
-    previous_groups = _group(prev, "campaign_name")
+def _rank_dimension(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], dimension: str, metric: str) -> List[Dict[str, Any]]:
+    """Rank observed metric movements for a named investigation dimension."""
+    current_groups = _group(rows, dimension)
+    previous_groups = _group(prev, dimension)
     ranked = []
     for name in sorted(set(current_groups) | set(previous_groups)):
         cur = _aggregate(current_groups.get(name, []))
@@ -79,7 +79,7 @@ def _rank_breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], met
         comparison = _delta(cur, old, metric)
         change = comparison.get("change_pct")
         ranked.append({
-            "campaign": name,
+            "value": name,
             "current_metrics": cur,
             "previous_metrics": old,
             "comparison": comparison,
@@ -92,9 +92,17 @@ def _rank_breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], met
         key=lambda item: (
             item["movement_magnitude_pct"] is None,
             -(item["movement_magnitude_pct"] or 0.0),
-            item["campaign"],
+            item["value"],
         ),
     )
+
+
+def _rank_breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> List[Dict[str, Any]]:
+    """Return campaign-level movements ordered by absolute metric change."""
+    return [
+        {**item, "campaign": item.pop("value")}
+        for item in _rank_dimension(rows, prev, "campaign_name", metric)
+    ]
 
 def _breakdowns(rows: List[Dict[str, Any]], prev: List[Dict[str, Any]], metric: str) -> Dict[str, Any]:
     """Compare current and previous performance at each investigation dimension.
@@ -152,6 +160,7 @@ async def investigate_growth_issue(question: str, current_records: List[Dict[str
             "campaigns_removed": sorted(previous_campaigns - current_campaigns),
         }
         result["campaign_movement_ranked"] = _rank_breakdowns(current, previous, metric)
+        result["creative_movement_ranked"] = _rank_dimension(current, previous, "creative_name", metric)
     if user_events:
         result["cohort_context"] = {"user_event_count": len([r for r in user_events if isinstance(r, dict)]), "note": "Use analyze_cohorts for detailed retention output."}
     return json.dumps(result, indent=2)
