@@ -18,3 +18,14 @@ def test_workflow_aggregate_uses_aggregate_rates():
     ])
     assert result["roas"] == 2.5
     assert result["ctr"] == 7.5
+
+
+from growthmcp.core.investigation import _drivers, _metric
+
+
+def test_investigation_detects_roas_and_drivers():
+    assert _metric("Why did ROAS drop?") == "roas"
+    drivers = _drivers({"revenue": 80, "spend": 120}, {"revenue": 100, "spend": 100}, "roas")
+    assert {d["component"] for d in drivers} == {"revenue", "spend"}
+    assert drivers[0]["delta"]["change_pct"] == -20.0
+    assert drivers[1]["delta"]["change_pct"] == 20.0
