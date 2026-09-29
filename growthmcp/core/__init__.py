@@ -18,6 +18,7 @@ from .targeting import (
     search_behaviors, search_demographics, search_geo_locations,
 )
 from .duplication import duplicate_campaign
+from .analytics import calculate_growth_metrics, compare_campaign_metrics, detect_metric_anomalies
 from . import authentication, ads_library, reports
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "get_insights", "login", "login_cli", "main", "create_budget_schedule",
     "search_interests", "get_interest_suggestions", "estimate_audience_size",
     "search_behaviors", "search_demographics", "search_geo_locations",
-    "duplicate_campaign",
+    "duplicate_campaign", "calculate_growth_metrics", "compare_campaign_metrics",
+    "detect_metric_anomalies",
 ]
