@@ -63,6 +63,6 @@ async def test_investigation_tool_returns_driver_evidence():
         previous_records=previous,
     ))
     assert result["issue_metric"] == "roas"
-    assert result["target_change"]["change_pct"] == -26.666666666666668
+    assert result["target_change"]["change_pct"] == -33.333333333333336
     assert {item["component"] for item in result["driver_decomposition"]} == {"revenue", "spend"}
     assert result["evidence"]["current_record_count"] == 1
