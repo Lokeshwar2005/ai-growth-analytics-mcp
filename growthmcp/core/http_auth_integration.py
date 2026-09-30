@@ -37,8 +37,19 @@ def setup_http_auth_patching() -> None:
     api.get_current_access_token = get_current_access_token_with_http_support
     authentication.get_current_access_token = get_current_access_token_with_http_support
 
+from starlette.middleware.cors import CORSMiddleware
+
 def setup_starlette_middleware(app) -> None:
     if not app: return
+    if not any(m.cls is CORSMiddleware for m in app.user_middleware):
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+            expose_headers=["mcp-session-id"],
+        )
     if any(m.cls is AuthInjectionMiddleware for m in app.user_middleware): return
     app.add_middleware(AuthInjectionMiddleware)
 
@@ -53,15 +64,14 @@ def setup_fastmcp_http_auth(mcp_server) -> None:
 
 class AuthInjectionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        if request.method == "OPTIONS":
+            return await call_next(request)
         token = FastMCPAuthIntegration.extract_token_from_headers(dict(request.headers))
-        if not token:
-            return Response(
-                content=json.dumps({"error":"Unauthorized","message":"Provide Authorization: Bearer <Meta access token> or X-META-ACCESS-TOKEN."}),
-                status_code=401, media_type="application/json", headers={"WWW-Authenticate":"Bearer"}
-            )
-        logger.debug("GrowthMCP auth token: %s", redact_secret(token))
-        FastMCPAuthIntegration.set_auth_token(token)
-        try: return await call_next(request)
-        finally: FastMCPAuthIntegration.clear_auth_token()
+        if token:
+            logger.debug("GrowthMCP auth token: %s", redact_secret(token))
+            FastMCPAuthIntegration.set_auth_token(token)
+            try: return await call_next(request)
+            finally: FastMCPAuthIntegration.clear_auth_token()
+        return await call_next(request)
 
 fastmcp_auth = FastMCPAuthIntegration()
