@@ -2,16 +2,19 @@
 
 **AI-powered marketing intelligence and Meta Ads MCP.**
 
+[![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-6C5CE7?style=for-the-badge)](https://lokeshwar2005.github.io/growthmcp-dashboard/)
+
 GrowthMCP is a derivative project built from the Meta Ads MCP server by **ARTELL SOLUÇÕES TECNOLÓGICAS LTDA**. The upstream work is licensed under **Business Source License 1.1**; the required license text is retained in [LICENSE](LICENSE).
 
-## 🚀 Live Demo & Deployment Status
+## 🚀 Live Dashboard & Demo
 
-> **Frontend Dashboard Status**: Not currently publicly deployed.
->
-> GrowthMCP is an independent, self-hosted Model Context Protocol (MCP) server rather than a static website. It serves marketing intelligence and Meta Ads tools via `stdio` and Streamable HTTP transports.
->
-> - **Interactive Inspection**: Full interactive UI testing is available locally via the official [MCP Inspector](docs/MCP_INSPECTOR.md).
-> - **Prerequisite for Public Demo**: A deployed web frontend client application configured to connect to GrowthMCP's Streamable HTTP transport endpoint.
+[🚀 Open GrowthMCP Growth Analytics Dashboard](https://lokeshwar2005.github.io/growthmcp-dashboard/)
+
+- **Live Dashboard**: https://lokeshwar2005.github.io/growthmcp-dashboard/
+- **Frontend Repository**: https://github.com/Lokeshwar2005/growthmcp-dashboard
+- **Local Inspection**: Interactive UI inspection via official [MCP Inspector](docs/MCP_INSPECTOR.md) (`npx -y @modelcontextprotocol/inspector python3 -m growthmcp`)
+
+> **Note on Architecture**: The dashboard is the public frontend demonstration of GrowthMCP workflows. GrowthMCP itself remains an independent, self-hosted MCP server running via `stdio` and Streamable HTTP. Meta Ads operations use operator-provided credentials server-side; the public dashboard never handles private API secrets.
 
 ## What is included
 
