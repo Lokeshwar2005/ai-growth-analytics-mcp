@@ -6,6 +6,12 @@
 
 GrowthMCP is a derivative project built from the Meta Ads MCP server by **ARTELL SOLUÇÕES TECNOLÓGICAS LTDA**. The upstream work is licensed under **Business Source License 1.1**; the required license text is retained in [LICENSE](LICENSE).
 
+## 📖 About GrowthMCP
+
+GrowthMCP is a self-hosted **Model Context Protocol (MCP)** server engineered for growth marketing analytics, performance diagnosis, and Meta Ads intelligence. It bridges LLM interfaces (Claude, Cursor, AI agents) and analytics frontends to the Meta Graph API, offering 12 deterministic analytical tools for multi-channel acquisition tracking, driver decomposition (e.g. *"Why did ROAS drop?"*), creative fatigue diagnostics, and cohort retention modeling without cloud lock-in or client-side credential exposure.
+
+👉 **[Open Live GrowthMCP Analytics Dashboard](https://lokeshwar2005.github.io/growthmcp-dashboard/)**
+
 ## 🚀 Live Dashboard & Demo
 
 [🚀 Open GrowthMCP Growth Analytics Dashboard](https://lokeshwar2005.github.io/growthmcp-dashboard/)
